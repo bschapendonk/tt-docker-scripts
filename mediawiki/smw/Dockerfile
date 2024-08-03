@@ -1,8 +1,8 @@
 FROM mediawiki:1.41
 
 # WORKDIR is apperently /var/www/html
-# composer:latest-bin throws errors about does not comply with psr-4 autoloading standard
-COPY --from=composer/composer:2.6-bin /composer /usr/bin/composer
+
+COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 COPY composer.local.json .
 COPY entrypoint.sh .
 
