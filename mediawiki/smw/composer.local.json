@@ -1,0 +1,14 @@
+{
+    "require": {
+        "mediawiki/semantic-media-wiki": "~4.2",
+        "mediawiki/semantic-result-formats": "~4.2"
+    },
+    "extra": {
+        "merge-plugin": {
+            "include": [
+                "extensions/*/composer.json",
+                "skins/*/composer.json"
+            ]
+        }
+    }
+}

@@ -1,42 +1,22 @@
 FROM mediawiki:1.41
 
-LABEL name="TechTangent's MediaWiki"
+# WORKDIR is apperently /var/www/html
 
-# Install additional packages
-RUN apt-get update && apt-get install -y \
-    unzip \
-    libzip-dev
+COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
+COPY composer.local.json .
+COPY entrypoint.sh .
 
-# Install additional extensions
-RUN docker-php-ext-install \
-    zip
+RUN <<EOF
+    apt update
+    apt upgrade --yes
+    apt install --yes --no-install-recommends \
+        unzip
+    rm -rf /var/lib/apt/lists/*
+EOF
 
-# Enable additional PHP extensions
-RUN docker-php-ext-enable \
-    zip
+RUN <<EOF
+    export COMPOSER_ALLOW_SUPERUSER=1
+    composer update --no-dev --no-cache
+EOF
 
-
-# Install Composer (Reference: https://getcomposer.org/download/)
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-    php -r "if (hash_file('sha384', 'composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" &&\
-    php composer-setup.php && \
-    php -r "unlink('composer-setup.php');" && \
-    mv composer.phar /usr/local/bin/composer
-
-# Fix PHP stuff (idk what this fixes, it's been too long)
-RUN echo -e "memory_limit = 50M\npost_max_size = 50M\nupload_max_filesize = 50M" > /usr/local/etc/php/conf.d/99-Wiki.ini
-
-# Install composer based extensions
-# normalized-exception version locked per: https://github.com/SemanticMediaWiki/SemanticMediaWiki/issues/5519#issuecomment-2137684545
-RUN cd /var/www/html/ \
-    && echo "{}" > composer.local.json \
-    && export COMPOSER=composer.local.json \
-	&& composer require wikimedia/at-ease "^2.1" --update-no-dev --no-scripts --no-plugins \
-	&& composer require liuggio/statsd-client-bundle --update-no-dev --no-scripts --no-plugins \
-	&& composer require wikimedia/normalized-exception "^1.0" --update-no-dev --no-scripts --no-plugins \
-	&& composer require mediawiki/semantic-media-wiki --update-no-dev --no-scripts --no-plugins \
-	&& composer require mediawiki/semantic-result-formats --update-no-dev --no-scripts --no-plugins
-
-
-# Need to execute program here, eg.
-# CMD ["php-fpm"]
+CMD ["./entrypoint.sh"]
