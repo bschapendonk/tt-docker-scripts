@@ -4,6 +4,7 @@
 if test -f LocalSettings.php; then
     if ! grep -q "wfLoadExtension('SemanticMediaWiki');" LocalSettings.php; then
         echo "wfLoadExtension('SemanticMediaWiki');" >>LocalSettings.php
+        echo "enableSemantics('0.0.0.0');" >>LocalSettings.php
         php maintenance/update.php
     fi
 fi
