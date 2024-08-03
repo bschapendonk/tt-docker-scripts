@@ -3,8 +3,8 @@
 # do web config wizzard first, then LocalSettings.php exists and we can add the smw stuff once
 if test -f LocalSettings.php; then
     if ! grep -q "wfLoadExtension('SemanticMediaWiki');" LocalSettings.php; then
-        echo "wfLoadExtension('SemanticMediaWiki');" >>LocalSettings.php
-        echo "enableSemantics('0.0.0.0');" >>LocalSettings.php
+        echo "wfLoadExtension('SemanticMediaWiki');" >> LocalSettings.php
+        echo "enableSemantics('0.0.0.0');" >> LocalSettings.php
         php maintenance/update.php
     fi
 fi
