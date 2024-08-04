@@ -1,0 +1,41 @@
+services:
+  mediawiki:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      INSTALL_SERVER: http://172.24.243.195:8080
+      INSTALL_NAME: My Awesome Wiki 
+      INSTALL_DB_SERVER: mariadb
+      INSTALL_DB_NAME: my_wiki
+      INSTALL_DB_USER: wikiuser
+      INSTALL_DB_PASS: example
+      INSTALL_ADMIN: admin
+      INSTALL_PASS: adminadmin
+    depends_on:
+      mariadb:
+        condition: service_healthy
+     
+  mariadb:
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: my_wiki
+      MARIADB_USER: wikiuser
+      MARIADB_PASSWORD: example
+      MARIADB_AUTO_UPGRADE: "yes"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - mariadb:/var/lib/mysql
+
+volumes:
+  mariadb:
